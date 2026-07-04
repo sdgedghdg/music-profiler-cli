@@ -14,6 +14,9 @@ dependencies = [
 [project.scripts]
 musicprofiler = "MusicProfiler.cli.main:main"
 
+[tool.setuptools.packages.find]
+include = ["MusicProfiler*"]
+
 [tool.setuptools.package-data]
 MusicProfiler = ["i18n/locales/*.json"]
 
