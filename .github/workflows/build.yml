@@ -1,0 +1,123 @@
+name: build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ── Python wheel (pure Python, build once) ──────────────────────────
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build wheel
+        run: |
+          pip install build
+          python -m build --wheel
+
+      - name: Run tests
+        run: |
+          pip install click
+          python -m pytest tests/ -v
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/*.whl
+
+  # ── um (Go) ─────────────────────────────────────────────────────────
+  go:
+    needs: []  # independent of python
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            suffix: ""
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            suffix: "-arm64"
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            suffix: ".exe"
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            suffix: ""
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            suffix: "-arm64"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Build um
+        working-directory: exlib/um-main/cli
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-s -w" -o um${{ matrix.suffix }} ./cmd/um
+        shell: bash
+
+      - name: Test um (native platform only)
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        working-directory: exlib/um-main/cli
+        run: go test ./...
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: um-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: exlib/um-main/cli/um${{ matrix.suffix }}
+
+  # ── Release (tag push only) ────────────────────────────────────────
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [python, go]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*"
+          path: artifacts
+          merge-multiple: false
+
+      - name: Flatten & rename artifacts
+        run: |
+          mkdir -p release
+
+          # python wheel
+          cp artifacts/python-wheel/*.whl release/
+
+          # go binaries — rename for clarity
+          cp artifacts/um-linux-amd64/um            release/um-linux-amd64
+          cp artifacts/um-linux-arm64/um            release/um-linux-arm64
+          cp artifacts/um-windows-amd64/um.exe      release/um-windows-amd64.exe
+          cp artifacts/um-darwin-amd64/um           release/um-darwin-amd64
+          cp artifacts/um-darwin-arm64/um           release/um-darwin-arm64
+
+          ls -lh release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true

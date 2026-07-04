@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "MusicProfiler"
+version = "0.1.0"
+description = "CLI audio batch processing workflow engine."
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8",
+]
+
+[project.scripts]
+musicprofiler = "MusicProfiler.cli.main:main"
+
+[tool.setuptools.package-data]
+MusicProfiler = ["i18n/locales/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.whl
+.venv/
+venv/
+
+# Go
+exlib/um-main/cli/um
+exlib/um-main/cli/um.exe
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# pytest
+.pytest_cache/
+
+# dotenv
+.env
+
+# Coverage & linting
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+
+# workspace (runtime artifacts, not source)
+MusicProfiler/workspace/raw/*
+MusicProfiler/workspace/processed/*
+MusicProfiler/workspace/output/*
+!MusicProfiler/workspace/raw/.gitkeep
+!MusicProfiler/workspace/processed/.gitkeep
+!MusicProfiler/workspace/output/.gitkeep
+
+# storage CSVs with actual user data (keep headers-only seeds)
+MusicProfiler/storage/songs.csv
+MusicProfiler/storage/playlists.csv
+MusicProfiler/storage/tasks.csv
+
+.notgit/
