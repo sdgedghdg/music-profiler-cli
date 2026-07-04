@@ -12,8 +12,6 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.29.0
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
-	golang.org/x/text v0.20.0
-	unlock-music.dev/mmkv v0.1.0
 )
 
 require (

@@ -25,7 +25,8 @@ jobs:
 
       - name: Run tests
         run: |
-          pip install click
+          pip install dist/*.whl
+          pip install pytest
           python -m pytest tests/ -v
 
       - uses: actions/upload-artifact@v4
